@@ -1,0 +1,31 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrintFarm_Manager", "PrintFarm_Manager\PrintFarm_Manager.csproj", "{678E2D55-E6EF-4A96-9E04-924965AF459B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data_PrintFarm_Manager", "Data_PrintFarm_Manager\Data_PrintFarm_Manager.csproj", "{84EBFA84-AB7D-41A8-B78B-2BE5EFC0886C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{678E2D55-E6EF-4A96-9E04-924965AF459B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{678E2D55-E6EF-4A96-9E04-924965AF459B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{678E2D55-E6EF-4A96-9E04-924965AF459B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{678E2D55-E6EF-4A96-9E04-924965AF459B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84EBFA84-AB7D-41A8-B78B-2BE5EFC0886C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84EBFA84-AB7D-41A8-B78B-2BE5EFC0886C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84EBFA84-AB7D-41A8-B78B-2BE5EFC0886C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84EBFA84-AB7D-41A8-B78B-2BE5EFC0886C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		        SolutionGuid = {1BB8558D-DD5C-4FF7-9751-48142AA5FA81}
+		SolutionGuid = {F1020B42-8349-4BE2-B2BD-A83A733928B5}
+	EndGlobalSection
+EndGlobal

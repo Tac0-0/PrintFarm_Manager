@@ -1,0 +1,19 @@
+@model PrintJobDetailsViewModel
+@{
+    ViewData["Title"] = "Детайли за задание";
+}
+<h1>Детайли за задание</h1>
+<div class="card p-4 mt-3">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Задание</dt><dd class="col-sm-9">@Model.Title</dd>
+        <dt class="col-sm-3">Материал</dt><dd class="col-sm-9">@Model.Material</dd>
+        <dt class="col-sm-3">Очаквани часове</dt><dd class="col-sm-9">@Model.EstimatedHours</dd>
+        <dt class="col-sm-3">Създадено на</dt><dd class="col-sm-9">@Model.CreatedOn.ToString("dd.MM.yyyy HH:mm")</dd>
+        <dt class="col-sm-3">Принтер</dt><dd class="col-sm-9">@Model.PrinterName</dd>
+        <dt class="col-sm-3">Местоположение на принтера</dt><dd class="col-sm-9">@Model.PrinterLocation</dd>
+    </dl>
+</div>
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редакция</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</div>

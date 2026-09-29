@@ -1,0 +1,35 @@
+@model PrintJobCreateViewModel
+@{
+    ViewData["Title"] = "Добави задание";
+}
+<h1>Добави задание</h1>
+<div class="card p-4 mt-3" style="max-width: 650px;">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Material" class="form-label"></label>
+            <input asp-for="Material" class="form-control" placeholder="PLA, PETG, ABS..." />
+            <span asp-validation-for="Material" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="EstimatedHours" class="form-label"></label>
+            <input asp-for="EstimatedHours" class="form-control" type="number" step="0.1" min="0.1" max="500" />
+            <span asp-validation-for="EstimatedHours" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="PrinterId" class="form-label"></label>
+            <select asp-for="PrinterId" asp-items="ViewBag.Printers" class="form-select">
+                <option value="0">-- Изберете принтер --</option>
+            </select>
+            <span asp-validation-for="PrinterId" class="text-danger"></span>
+        </div>
+        <button class="btn btn-primary" type="submit">Запази</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </form>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

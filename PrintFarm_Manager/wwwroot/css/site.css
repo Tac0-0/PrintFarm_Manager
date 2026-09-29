@@ -1,0 +1,4 @@
+body { background: #f7f7f9; }
+.card { border: 0; box-shadow: 0 0.15rem 0.55rem rgba(0,0,0,.08); }
+.table { background: white; }
+.actions a { margin-right: .4rem; }
