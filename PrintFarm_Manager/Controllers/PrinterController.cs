@@ -39,14 +39,14 @@ public class PrinterController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(PrinterCreateViewModel model)
+    public async Task<IActionResult> Create(PrinterCreateViewModel viewModel)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid) return View(viewModel);
 
         await printerService.AddPrinterAsync(new Printer
         {
-            Name = model.Name, Model = model.Model,
-            Location = model.Location, IsOperational = model.IsOperational
+            Name = viewModel.Name, Model = viewModel.Model,
+            Location = viewModel.Location, IsOperational = viewModel.IsOperational
         });
         return RedirectToAction(nameof(Index));
     }
@@ -65,15 +65,15 @@ public class PrinterController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, PrinterEditViewModel model)
+    public async Task<IActionResult> Edit(int id, PrinterEditViewModel viewModel)
     {
-        if (id != model.Id) return NotFound();
-        if (!ModelState.IsValid) return View(model);
+        if (id != viewModel.Id) return NotFound();
+        if (!ModelState.IsValid) return View(viewModel);
 
         var updated = await printerService.UpdatePrinterAsync(new Printer
         {
-            Id = id, Name = model.Name, Model = model.Model,
-            Location = model.Location, IsOperational = model.IsOperational
+            Id = id, Name = viewModel.Name, Model = viewModel.Model,
+            Location = viewModel.Location, IsOperational = viewModel.IsOperational
         });
         return updated ? RedirectToAction(nameof(Index)) : NotFound();
     }
