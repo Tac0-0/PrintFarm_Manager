@@ -1,0 +1,24 @@
+@model FilamentEditViewModel
+@{
+    ViewData["Title"] = "Редакция на материал";
+}
+<h1>Редакция на материал</h1>
+<div class="card p-4 mt-3" style="max-width: 650px;">
+    <form asp-action="Edit" method="post">
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Color" class="form-label"></label>
+            <input asp-for="Color" class="form-control" />
+            <span asp-validation-for="Color" class="text-danger"></span>
+        </div>
+        <button class="btn btn-primary" type="submit">Запази промените</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </form>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

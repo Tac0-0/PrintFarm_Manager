@@ -1,149 +1,92 @@
-using Data_PrintFarm_Manager;
 using Data_PrintFarm_Manager.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PrintFarm_Manager.ViewModels.Printer;
+using PrintFarm_Manager_Core.Interfaces;
 
 namespace PrintFarm_Manager.Controllers;
 
 public class PrinterController : Controller
 {
-    private readonly PrintFarmDbContext context;
+    private readonly IPrinterService printerService;
 
-    public PrinterController(PrintFarmDbContext context)
-    {
-        this.context = context;
-    }
+    public PrinterController(IPrinterService printerService) => this.printerService = printerService;
 
     public async Task<IActionResult> Index()
     {
-        var printers = await context.Printers
-            .Include(p => p.PrintJobs)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-
-        var model = printers.Select(p => new PrinterIndexViewModel
+        var printers = await printerService.GetAllPrintersAsync();
+        return View(printers.Select(p => new PrinterIndexViewModel
         {
-            Id = p.Id,
-            Name = p.Name,
-            Model = p.Model,
-            Location = p.Location,
-            IsOperational = p.IsOperational,
-            PrintJobsCount = p.PrintJobs.Count
-        }).ToList();
-
-        return View(model);
+            Id = p.Id, Name = p.Name, Model = p.Model, Location = p.Location,
+            IsOperational = p.IsOperational, PrintJobsCount = p.PrintJobs.Count
+        }).ToList());
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        var printer = await context.Printers
-            .Include(p => p.PrintJobs)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var printer = await printerService.GetPrinterDetailsAsync(id);
+        if (printer == null) return NotFound();
 
-        if (printer == null)
-            return NotFound();
-
-        var model = new PrinterDetailsViewModel
+        return View(new PrinterDetailsViewModel
         {
-            Id = printer.Id,
-            Name = printer.Name,
-            Model = printer.Model,
-            Location = printer.Location,
-            IsOperational = printer.IsOperational,
-            PrintJobs = printer.PrintJobs
-                .OrderByDescending(j => j.CreatedOn)
-                .Select(j => $"{j.Title} ({j.Material})")
-                .ToList()
-        };
-
-        return View(model);
+            Id = printer.Id, Name = printer.Name, Model = printer.Model,
+            Location = printer.Location, IsOperational = printer.IsOperational,
+            PrintJobs = printer.PrintJobs.OrderByDescending(j => j.CreatedOn)
+                .Select(j => j.Title).ToList()
+        });
     }
 
-    public IActionResult Create()
-    {
-        return View(new PrinterCreateViewModel());
-    }
+    public IActionResult Create() => View(new PrinterCreateViewModel());
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PrinterCreateViewModel viewModel)
     {
-        if (!ModelState.IsValid)
-            return View(viewModel);
+        if (!ModelState.IsValid) return View(viewModel);
 
-        var printer = new Printer
+        await printerService.AddPrinterAsync(new Printer
         {
-            Name = viewModel.Name,
-            Model = viewModel.Model,
-            Location = viewModel.Location,
-            IsOperational = viewModel.IsOperational
-        };
-
-        context.Printers.Add(printer);
-        await context.SaveChangesAsync();
-
+            Name = viewModel.Name, Model = viewModel.Model,
+            Location = viewModel.Location, IsOperational = viewModel.IsOperational
+        });
         return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Edit(int id)
     {
-        var printer = await context.Printers.FindAsync(id);
-        if (printer == null)
-            return NotFound();
+        var printer = await printerService.GetPrinterByIdAsync(id);
+        if (printer == null) return NotFound();
 
-        var model = new PrinterEditViewModel
+        return View(new PrinterEditViewModel
         {
-            Id = printer.Id,
-            Name = printer.Name,
-            Model = printer.Model,
-            Location = printer.Location,
-            IsOperational = printer.IsOperational
-        };
-
-        return View(model);
+            Id = printer.Id, Name = printer.Name, Model = printer.Model,
+            Location = printer.Location, IsOperational = printer.IsOperational
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, PrinterEditViewModel viewModel)
     {
-        if (id != viewModel.Id)
-            return NotFound();
+        if (id != viewModel.Id) return NotFound();
+        if (!ModelState.IsValid) return View(viewModel);
 
-        if (!ModelState.IsValid)
-            return View(viewModel);
-
-        var printer = await context.Printers.FindAsync(id);
-        if (printer == null)
-            return NotFound();
-
-        printer.Name = viewModel.Name;
-        printer.Model = viewModel.Model;
-        printer.Location = viewModel.Location;
-        printer.IsOperational = viewModel.IsOperational;
-
-        await context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        var updated = await printerService.UpdatePrinterAsync(new Printer
+        {
+            Id = id, Name = viewModel.Name, Model = viewModel.Model,
+            Location = viewModel.Location, IsOperational = viewModel.IsOperational
+        });
+        return updated ? RedirectToAction(nameof(Index)) : NotFound();
     }
 
     public async Task<IActionResult> Delete(int id)
     {
-        var printer = await context.Printers
-            .Include(p => p.PrintJobs)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var printer = await printerService.GetPrinterByIdAsync(id);
+        if (printer == null) return NotFound();
 
-        if (printer == null)
-            return NotFound();
-
-        var model = new PrinterDeleteViewModel
+        return View(new PrinterDeleteViewModel
         {
-            Id = printer.Id,
-            Name = printer.Name,
-            PrintJobsCount = printer.PrintJobs.Count
-        };
-
-        return View(model);
+            Id = printer.Id, Name = printer.Name, PrintJobsCount = printer.PrintJobs.Count
+        });
     }
 
     [HttpPost]
@@ -151,13 +94,7 @@ public class PrinterController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var printer = await context.Printers.FindAsync(id);
-        if (printer != null)
-        {
-            context.Printers.Remove(printer);
-            await context.SaveChangesAsync();
-        }
-
+        await printerService.DeletePrinterAsync(id);
         return RedirectToAction(nameof(Index));
     }
 }

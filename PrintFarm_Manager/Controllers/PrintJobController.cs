@@ -1,66 +1,55 @@
-using Data_PrintFarm_Manager;
 using Data_PrintFarm_Manager.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using PrintFarm_Manager.ViewModels.PrintJob;
+using PrintFarm_Manager_Core.Interfaces;
 
 namespace PrintFarm_Manager.Controllers;
 
 public class PrintJobController : Controller
 {
-    private readonly PrintFarmDbContext context;
+    private readonly IPrintJobService printJobService;
+    private readonly IPrinterService printerService;
+    private readonly IFilamentService filamentService;
 
-    public PrintJobController(PrintFarmDbContext context)
+    public PrintJobController(
+        IPrintJobService printJobService, IPrinterService printerService, IFilamentService filamentService)
     {
-        this.context = context;
+        this.printJobService = printJobService;
+        this.printerService = printerService;
+        this.filamentService = filamentService;
     }
 
     public async Task<IActionResult> Index()
     {
-        var jobs = await context.PrintJobs
-            .Include(j => j.Printer)
-            .OrderByDescending(j => j.CreatedOn)
-            .ToListAsync();
-
-        var model = jobs.Select(j => new PrintJobIndexViewModel
+        var jobs = await printJobService.GetAllPrintJobsAsync();
+        return View(jobs.Select(j => new PrintJobIndexViewModel
         {
-            Id = j.Id,
-            Title = j.Title,
-            Material = j.Material,
-            EstimatedHours = j.EstimatedHours,
-            PrinterName = j.Printer.Name
-        }).ToList();
-
-        return View(model);
+            Id = j.Id, Title = j.Title, EstimatedHours = j.EstimatedHours,
+            PrinterName = j.Printer.Name,
+            Filaments = string.Join(", ", j.PrintJobFilaments
+                .Select(link => link.Filament.DisplayName).OrderBy(name => name))
+        }).ToList());
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        var job = await context.PrintJobs
-            .Include(j => j.Printer)
-            .FirstOrDefaultAsync(j => j.Id == id);
+        var job = await printJobService.GetPrintJobDetailsAsync(id);
+        if (job == null) return NotFound();
 
-        if (job == null)
-            return NotFound();
-
-        var model = new PrintJobDetailsViewModel
+        return View(new PrintJobDetailsViewModel
         {
-            Id = job.Id,
-            Title = job.Title,
-            Material = job.Material,
-            EstimatedHours = job.EstimatedHours,
-            CreatedOn = job.CreatedOn,
-            PrinterName = job.Printer.Name,
-            PrinterLocation = job.Printer.Location
-        };
-
-        return View(model);
+            Id = job.Id, Title = job.Title, EstimatedHours = job.EstimatedHours,
+            CreatedOn = job.CreatedOn, PrinterName = job.Printer.Name,
+            PrinterLocation = job.Printer.Location,
+            Filaments = string.Join(", ", job.PrintJobFilaments
+                .Select(link => link.Filament.DisplayName).OrderBy(name => name))
+        });
     }
 
     public async Task<IActionResult> Create()
     {
-        await PopulatePrinters();
+        await PopulateOptionsAsync();
         return View(new PrintJobCreateViewModel());
     }
 
@@ -68,46 +57,34 @@ public class PrintJobController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PrintJobCreateViewModel model)
     {
-        if (!await context.Printers.AnyAsync(p => p.Id == model.PrinterId))
-            ModelState.AddModelError(nameof(model.PrinterId), "Избраният принтер не съществува.");
-
+        await ValidateReferencesAsync(model.PrinterId, model.FilamentIds);
         if (!ModelState.IsValid)
         {
-            await PopulatePrinters(model.PrinterId);
+            await PopulateOptionsAsync(model.PrinterId, model.FilamentIds);
             return View(model);
         }
 
-        var job = new PrintJob
+        await printJobService.AddPrintJobAsync(new PrintJob
         {
-            Title = model.Title,
-            Material = model.Material,
-            EstimatedHours = model.EstimatedHours,
-            CreatedOn = DateTime.Now,
-            PrinterId = model.PrinterId
-        };
-
-        context.PrintJobs.Add(job);
-        await context.SaveChangesAsync();
+            Title = model.Title, EstimatedHours = model.EstimatedHours,
+            CreatedOn = DateTime.Now, PrinterId = model.PrinterId
+        }, model.FilamentIds);
 
         return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Edit(int id)
     {
-        var job = await context.PrintJobs.FindAsync(id);
-        if (job == null)
-            return NotFound();
+        var job = await printJobService.GetPrintJobByIdAsync(id);
+        if (job == null) return NotFound();
 
         var model = new PrintJobEditViewModel
         {
-            Id = job.Id,
-            Title = job.Title,
-            Material = job.Material,
-            EstimatedHours = job.EstimatedHours,
-            PrinterId = job.PrinterId
+            Id = job.Id, Title = job.Title, EstimatedHours = job.EstimatedHours,
+            PrinterId = job.PrinterId,
+            FilamentIds = job.PrintJobFilaments.Select(link => link.FilamentId).ToList()
         };
-
-        await PopulatePrinters(job.PrinterId);
+        await PopulateOptionsAsync(model.PrinterId, model.FilamentIds);
         return View(model);
     }
 
@@ -115,48 +92,33 @@ public class PrintJobController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, PrintJobEditViewModel model)
     {
-        if (id != model.Id)
-            return NotFound();
+        if (id != model.Id) return NotFound();
 
-        if (!await context.Printers.AnyAsync(p => p.Id == model.PrinterId))
-            ModelState.AddModelError(nameof(model.PrinterId), "Избраният принтер не съществува.");
-
+        await ValidateReferencesAsync(model.PrinterId, model.FilamentIds);
         if (!ModelState.IsValid)
         {
-            await PopulatePrinters(model.PrinterId);
+            await PopulateOptionsAsync(model.PrinterId, model.FilamentIds);
             return View(model);
         }
 
-        var job = await context.PrintJobs.FindAsync(id);
-        if (job == null)
-            return NotFound();
+        var updated = await printJobService.UpdatePrintJobAsync(new PrintJob
+        {
+            Id = id, Title = model.Title,
+            EstimatedHours = model.EstimatedHours, PrinterId = model.PrinterId
+        }, model.FilamentIds);
 
-        job.Title = model.Title;
-        job.Material = model.Material;
-        job.EstimatedHours = model.EstimatedHours;
-        job.PrinterId = model.PrinterId;
-
-        await context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return updated ? RedirectToAction(nameof(Index)) : NotFound();
     }
 
     public async Task<IActionResult> Delete(int id)
     {
-        var job = await context.PrintJobs
-            .Include(j => j.Printer)
-            .FirstOrDefaultAsync(j => j.Id == id);
+        var job = await printJobService.GetPrintJobDetailsAsync(id);
+        if (job == null) return NotFound();
 
-        if (job == null)
-            return NotFound();
-
-        var model = new PrintJobDeleteViewModel
+        return View(new PrintJobDeleteViewModel
         {
-            Id = job.Id,
-            Title = job.Title,
-            PrinterName = job.Printer.Name
-        };
-
-        return View(model);
+            Id = job.Id, Title = job.Title, PrinterName = job.Printer.Name
+        });
     }
 
     [HttpPost]
@@ -164,22 +126,28 @@ public class PrintJobController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var job = await context.PrintJobs.FindAsync(id);
-        if (job != null)
-        {
-            context.PrintJobs.Remove(job);
-            await context.SaveChangesAsync();
-        }
-
+        await printJobService.DeletePrintJobAsync(id);
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task PopulatePrinters(int? selectedPrinterId = null)
+    private async Task ValidateReferencesAsync(int printerId, List<int>? filamentIds)
     {
-        var printers = await context.Printers
-            .OrderBy(p => p.Name)
-            .ToListAsync();
+        var printers = await printerService.GetAllPrintersAsync();
+        if (!printers.Any(p => p.Id == printerId))
+            ModelState.AddModelError("PrinterId", "Избраният принтер не съществува.");
 
-        ViewBag.Printers = new SelectList(printers, "Id", "Name", selectedPrinterId);
+        var validFilamentIds = (await filamentService.GetAllFilamentsAsync()).Select(f => f.Id).ToHashSet();
+        if (filamentIds == null || filamentIds.Count == 0)
+            ModelState.AddModelError("FilamentIds", "Изберете поне един материал.");
+        else if (filamentIds.Any(id => !validFilamentIds.Contains(id)))
+            ModelState.AddModelError("FilamentIds", "Невалиден материал.");
+    }
+
+    private async Task PopulateOptionsAsync(int? selectedPrinterId = null, IEnumerable<int>? selectedFilamentIds = null)
+    {
+        ViewBag.Printers = new SelectList(
+            await printerService.GetAllPrintersAsync(), "Id", "Name", selectedPrinterId);
+        ViewBag.Filaments = new MultiSelectList(
+            await filamentService.GetAllFilamentsAsync(), "Id", "DisplayName", selectedFilamentIds);
     }
 }

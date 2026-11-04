@@ -13,9 +13,11 @@
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Material" class="form-label"></label>
-            <input asp-for="Material" class="form-control" />
-            <span asp-validation-for="Material" class="text-danger"></span>
+            <label asp-for="FilamentIds" class="form-label"></label>
+            <select asp-for="FilamentIds" asp-items="ViewBag.Filaments" class="form-select" multiple size="6"></select>
+            <div class="form-text">Изберете един или повече материала (Ctrl + щракване).</div>
+            <a asp-controller="Filament" asp-action="Create">Добави нов материал</a>
+            <span asp-validation-for="FilamentIds" class="text-danger d-block"></span>
         </div>
         <div class="mb-3">
             <label asp-for="EstimatedHours" class="form-label"></label>
