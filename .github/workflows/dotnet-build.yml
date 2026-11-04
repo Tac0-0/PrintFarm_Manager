@@ -17,3 +17,7 @@ jobs:
         run: dotnet restore PrintFarm_Manager.sln
       - name: Build
         run: dotnet build PrintFarm_Manager.sln --configuration Release --no-restore
+      - name: Validate EF Core migration SQL
+        run: |
+          dotnet tool install --global dotnet-ef --version 8.0.17
+          dotnet ef migrations script --project Data_PrintFarm_Manager --startup-project PrintFarm_Manager --output generated-migrations.sql
