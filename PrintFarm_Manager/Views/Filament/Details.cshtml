@@ -1,0 +1,31 @@
+@model FilamentDetailsViewModel
+@{
+    ViewData["Title"] = "Детайли за материал";
+}
+<h1>Детайли за материал</h1>
+<div class="card p-4 mt-3">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Материал</dt><dd class="col-sm-9">@Model.Name</dd>
+        <dt class="col-sm-3">Цвят</dt><dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Color) ? "Неуточнен" : Model.Color)</dd>
+        <dt class="col-sm-3">Използван в задания</dt>
+        <dd class="col-sm-9">
+            @if (Model.PrintJobs.Count == 0)
+            {
+                <span>Все още няма задания.</span>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var title in Model.PrintJobs)
+                    {
+                        <li>@title</li>
+                    }
+                </ul>
+            }
+        </dd>
+    </dl>
+</div>
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редакция</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</div>

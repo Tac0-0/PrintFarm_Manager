@@ -1,0 +1,17 @@
+@model FilamentDeleteViewModel
+@{
+    ViewData["Title"] = "Изтриване на материал";
+}
+<h1>Изтриване на материал</h1>
+<div class="alert alert-warning mt-3">
+    Сигурни ли сте, че искате да изтриете <strong>@Model.Name</strong>?
+    @if (Model.PrintJobsCount > 0)
+    {
+        <p class="mb-0 mt-2">Материалът е свързан с @Model.PrintJobsCount задания. Връзките ще бъдат изтрити, но заданията ще останат.</p>
+    }
+</div>
+<form asp-action="Delete" method="post">
+    <input asp-for="Id" type="hidden" />
+    <button class="btn btn-danger" type="submit">Изтрий</button>
+    <a asp-action="Index" class="btn btn-secondary">Отказ</a>
+</form>

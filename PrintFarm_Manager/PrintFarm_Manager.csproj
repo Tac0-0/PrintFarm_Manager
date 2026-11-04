@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Data_PrintFarm_Manager\Data_PrintFarm_Manager.csproj" />
+    <ProjectReference Include="..\PrintFarm_Manager_Core\PrintFarm_Manager_Core.csproj" />
   </ItemGroup>
 </Project>

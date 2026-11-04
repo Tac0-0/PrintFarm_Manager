@@ -5,20 +5,20 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1>Задания за печат</h1>
-        <p class="text-muted mb-0">Зависимата таблица. Името на принтера идва от свързаната таблица.</p>
+        <p class="text-muted mb-0">Заданията са свързани с принтер и един или повече материали.</p>
     </div>
     <a asp-action="Create" class="btn btn-primary">Добави задание</a>
 </div>
 <table class="table table-striped align-middle">
     <thead>
-        <tr><th>Задание</th><th>Материал</th><th>Часове</th><th>Принтер</th><th></th></tr>
+        <tr><th>Задание</th><th>Материали</th><th>Часове</th><th>Принтер</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var item in Model)
     {
         <tr>
             <td>@item.Title</td>
-            <td>@item.Material</td>
+            <td>@item.Filaments</td>
             <td>@item.EstimatedHours</td>
             <td>@item.PrinterName</td>
             <td class="actions text-nowrap">

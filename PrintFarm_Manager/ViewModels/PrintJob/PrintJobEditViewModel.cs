@@ -11,10 +11,9 @@ public class PrintJobEditViewModel
     [Display(Name = "Задание")]
     public string Title { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Материалът е задължителен.")]
-    [MaxLength(30)]
-    [Display(Name = "Материал")]
-    public string Material { get; set; } = string.Empty;
+    [MinLength(1, ErrorMessage = "Изберете поне един материал.")]
+    [Display(Name = "Материали")]
+    public List<int> FilamentIds { get; set; } = new();
 
     [Range(typeof(decimal), "0.1", "500", ErrorMessage = "Времето трябва да е между 0.1 и 500 часа.", ParseLimitsInInvariantCulture = true, ConvertValueInInvariantCulture = true)]
     [Display(Name = "Очаквани часове")]
