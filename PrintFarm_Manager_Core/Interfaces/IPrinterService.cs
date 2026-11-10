@@ -4,7 +4,7 @@ namespace PrintFarm_Manager_Core.Interfaces;
 
 public interface IPrinterService
 {
-    Task<List<Printer>> GetAllPrintersAsync();
+    Task<List<Printer>> GetAllPrintersAsync(string? search = null, bool? isOperational = null, string? sortOrder = null);
     Task<Printer?> GetPrinterByIdAsync(int id);
     Task<Printer?> GetPrinterDetailsAsync(int id);
     Task AddPrinterAsync(Printer printer);

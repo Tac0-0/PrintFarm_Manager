@@ -1,14 +1,46 @@
 @model IEnumerable<PrinterIndexViewModel>
 @{
     ViewData["Title"] = "Принтери";
+    bool? selectedStatus = (bool?)ViewBag.IsOperational;
+    string selectedSort = (string?)ViewBag.SortOrder ?? "name";
 }
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1>Принтери</h1>
-        <p class="text-muted mb-0">Основната таблица в връзката 1:N.</p>
+        <p class="text-muted mb-0">Основната таблица във връзката 1:N.</p>
     </div>
     <a asp-action="Create" class="btn btn-primary">Добави принтер</a>
 </div>
+
+<form asp-controller="Printer" asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-4">
+        <label for="search" class="form-label">Търсене</label>
+        <input id="search" type="text" name="search" value="@ViewBag.Search"
+               class="form-control" placeholder="Име, модел или местоположение" />
+    </div>
+    <div class="col-md-3">
+        <label for="isOperational" class="form-label">Статус</label>
+        <select id="isOperational" name="isOperational" class="form-select">
+            <option value="" selected="@(selectedStatus == null)">Всички</option>
+            <option value="true" selected="@(selectedStatus == true)">Работещи</option>
+            <option value="false" selected="@(selectedStatus == false)">Спрени</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="sortOrder" class="form-label">Сортиране</label>
+        <select id="sortOrder" name="sortOrder" class="form-select">
+            <option value="name" selected="@(selectedSort == "name")">Име (А-Я)</option>
+            <option value="name_desc" selected="@(selectedSort == "name_desc")">Име (Я-А)</option>
+            <option value="model" selected="@(selectedSort == "model")">Модел (А-Я)</option>
+            <option value="jobs_desc" selected="@(selectedSort == "jobs_desc")">Най-много задания</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Приложи</button>
+        <a asp-controller="Printer" asp-action="Index" class="btn btn-outline-secondary">Изчисти</a>
+    </div>
+</form>
+
 <table class="table table-striped align-middle">
     <thead>
         <tr>
@@ -16,20 +48,29 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
+    @if (!Model.Any())
     {
         <tr>
-            <td>@item.Name</td>
-            <td>@item.Model</td>
-            <td>@item.Location</td>
-            <td>@(item.IsOperational ? "Работи" : "Спрян")</td>
-            <td>@item.PrintJobsCount</td>
-            <td class="actions text-nowrap">
-                <a asp-action="Details" asp-route-id="@item.Id">Детайли</a>
-                <a asp-action="Edit" asp-route-id="@item.Id">Редакция</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger">Изтриване</a>
-            </td>
+            <td colspan="6" class="text-center text-muted">Няма намерени принтери.</td>
         </tr>
+    }
+    else
+    {
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Model</td>
+                <td>@item.Location</td>
+                <td>@(item.IsOperational ? "Работи" : "Спрян")</td>
+                <td>@item.PrintJobsCount</td>
+                <td class="actions text-nowrap">
+                    <a asp-action="Details" asp-route-id="@item.Id">Детайли</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редакция</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="text-danger">Изтриване</a>
+                </td>
+            </tr>
+        }
     }
     </tbody>
 </table>
