@@ -11,9 +11,15 @@ public class PrinterController : Controller
 
     public PrinterController(IPrinterService printerService) => this.printerService = printerService;
 
-    public async Task<IActionResult> Index()
+    [HttpGet]
+    public async Task<IActionResult> Index(string? search, bool? isOperational, string? sortOrder)
     {
-        var printers = await printerService.GetAllPrintersAsync();
+        var printers = await printerService.GetAllPrintersAsync(search, isOperational, sortOrder);
+
+        ViewBag.Search = search;
+        ViewBag.IsOperational = isOperational;
+        ViewBag.SortOrder = sortOrder;
+
         return View(printers.Select(p => new PrinterIndexViewModel
         {
             Id = p.Id, Name = p.Name, Model = p.Model, Location = p.Location,
