@@ -42,6 +42,7 @@ partial class PrintFarmDbContextModelSnapshot : ModelSnapshot
             b.Property<int>("PrinterId").HasColumnType("int");
             b.Property<string>("Title").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)");
             b.HasKey("Id");
+            b.HasIndex("CreatedOn");
             b.HasIndex("PrinterId");
             b.ToTable("PrintJobs");
         });
@@ -64,6 +65,7 @@ partial class PrintFarmDbContextModelSnapshot : ModelSnapshot
             b.Property<string>("Model").IsRequired().HasMaxLength(60).HasColumnType("nvarchar(60)");
             b.Property<string>("Name").IsRequired().HasMaxLength(50).HasColumnType("nvarchar(50)");
             b.HasKey("Id");
+            b.HasIndex("Name");
             b.ToTable("Printers");
         });
 
