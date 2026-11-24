@@ -1,3 +1,4 @@
+using Data_PrintFarm_Manager.Configurations;
 using Data_PrintFarm_Manager.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,29 +18,9 @@ public class PrintFarmDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<PrintJob>()
-            .HasOne(j => j.Printer)
-            .WithMany(p => p.PrintJobs)
-            .HasForeignKey(j => j.PrinterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Filament>()
-            .HasIndex(f => new { f.Name, f.Color })
-            .IsUnique();
-
-        modelBuilder.Entity<PrintJobFilament>()
-            .HasKey(link => new { link.PrintJobId, link.FilamentId });
-
-        modelBuilder.Entity<PrintJobFilament>()
-            .HasOne(link => link.PrintJob)
-            .WithMany(j => j.PrintJobFilaments)
-            .HasForeignKey(link => link.PrintJobId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PrintJobFilament>()
-            .HasOne(link => link.Filament)
-            .WithMany(f => f.PrintJobFilaments)
-            .HasForeignKey(link => link.FilamentId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.ApplyConfiguration(new PrinterConfiguration());
+        modelBuilder.ApplyConfiguration(new PrintJobConfiguration());
+        modelBuilder.ApplyConfiguration(new FilamentConfiguration());
+        modelBuilder.ApplyConfiguration(new PrintJobFilamentConfiguration());
     }
 }
